@@ -4,13 +4,13 @@ int rightSensor = A4;
 int leftLED = 10;
 int rightLED = 11; 
 
-int leftControl1 = 7;
-int leftControl2 = 13;
-int leftEnable = 5;
+int leftControl1 = 12;
+int leftControl2 = 8;
+int leftEnable = 3;
 
-int rightControl1 = 8;
-int rightControl2 = 12;
-int rightEnable = 3;
+int rightControl1 = 13;
+int rightControl2 = 7;
+int rightEnable = 5;
 
 int whiteLeft = 0; 
 int whiteRight = 0;
@@ -18,6 +18,9 @@ int leftSensorValue = 0;
 int rightSensorValue = 0;
 
 int time;
+int tolerance = 50;
+int motorSpeed = 80;
+int turnDuration = 500;
 
 void setup() {
   Serial.begin(9600);
@@ -51,23 +54,30 @@ void loop(){
   Serial.print(leftSensorValue);
   Serial.print(", ");
   Serial.println(rightSensorValue);
-  delay(200);
+  delay(50);
 
-  if (leftSensorValue > whiteLeft + 100){
+//  if (leftSensorValue > whiteLeft + tolerance & rightSensorValue > whiteRight + tolerance){
+//    //intersectionCount ++;
+//    analogWrite(rightEnable, motorSpeed);
+//    analogWrite(leftEnable, 0);
+//    delay(turnDuration);
+//  }
+
+  if (leftSensorValue > whiteLeft + tolerance){
     analogWrite(leftEnable, 0);
     digitalWrite(leftLED, HIGH);
   }
   else{
-    analogWrite(leftEnable, 150);
+    analogWrite(leftEnable, motorSpeed);
     digitalWrite(leftLED, LOW);
   }
 
-  if (rightSensorValue > whiteRight + 100){
+  if (rightSensorValue > whiteRight + tolerance){
     analogWrite(rightEnable, 0);
     digitalWrite(rightLED, HIGH);
   }
   else{
-    analogWrite(rightEnable, 150);
+    analogWrite(rightEnable, motorSpeed);
     digitalWrite(rightLED, LOW);
   }
 }
@@ -82,8 +92,9 @@ void calibrate(){
     leftSensorValue = analogRead(leftSensor);
     rightSensorValue = analogRead(rightSensor);
 
-    leftSum += leftSensorValue;
-    rightSum += rightSensorValue;
+    whiteLeft = max(whiteLeft, leftSensorValue);
+    whiteRight = max(whiteRight, rightSensorValue);
+    
 
     Serial.print("Calibrating: ");
     Serial.print(leftSensorValue);
@@ -92,9 +103,6 @@ void calibrate(){
     Serial.print("\n");
     delay(100);
   }
-
-  whiteLeft = leftSum / 50;
-  whiteRight = rightSum / 50; 
 
   Serial.print("whiteleft");
   Serial.print(whiteLeft);
